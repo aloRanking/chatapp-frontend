@@ -1,0 +1,50 @@
+ <div *ngIf="!showNewPassword" style="max-width: 300px; margin: 50px auto; padding: 20px;">
+      <h2>Login</h2>
+      
+      <div *ngIf="error" style="color: red; margin-bottom: 10px;">
+        {{ error }}
+      </div>
+      
+      <div style="margin: 10px 0;">
+        <input 
+          [(ngModel)]="username" 
+          placeholder="Username" 
+          style="width: 100%; padding: 8px;">
+      </div>
+      
+      <div style="margin: 10px 0;">
+        <input 
+          [(ngModel)]="password" 
+          type="password" 
+          placeholder="Password" 
+          style="width: 100%; padding: 8px;">
+      </div>
+      
+      <button 
+        (click)="login()" 
+        [disabled]="!username || !password"
+        style="width: 100%; padding: 10px; margin-top: 10px;">
+        Login
+      </button>
+      
+      <p style="margin-top: 10px;">
+        Don't have an account? <a routerLink="/register">Register</a>
+      </p>
+    </div>
+
+    <app-new-password
+      *ngIf="showNewPassword"
+      [username]="username"
+      [session]="session"
+      (passwordChanged)="onPasswordChanged($event)"
+      (cancelled)="onPasswordCancelled()">
+    </app-new-password>
+
+   <div class="div" style="max-width: 300px; margin: 20px auto;">
+
+    @if(showNewPassword){
+     <button 
+        (click)="showNewPassword = false;" 
+        style="width: 100%; padding: 10px; background: #fafcfa; color: black; border: none; border-radius: 4px; cursor: pointer;">
+        Cancel New Password Setup
+      </button>}
