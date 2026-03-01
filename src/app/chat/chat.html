@@ -1,0 +1,158 @@
+<div class="chat-container">
+      <!-- Header -->
+      <div class="header">
+        <h2>💬 Chat App</h2>
+        <div class="user-info">
+            <button class="dashboard-btn" (click)="gotoDashboard()">Dashboard</button>
+          <span>{{ currentUsername }}</span>
+          <button class="logout-btn" (click)="logout()">Logout</button>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <!-- Sidebar - Rooms List -->
+        <div class="rooms-sidebar">
+          <div class="rooms-header">
+            <h3>Rooms</h3>
+            <button class="create-room-btn" (click)="showCreateRoomModal = true">
+              <span class="plus-icon">+</span> New Room
+            </button>
+          </div>
+          
+          <div class="rooms-list">
+            <div *ngIf="loadingRooms" class="loading">
+              Loading rooms...
+            </div>
+            
+            <div
+              *ngFor="let room of rooms"
+              class="room-item"
+              [class.active]="selectedRoom?.roomId === room.roomId"
+              (click)="selectRoom(room)"
+            >
+              <div class="room-icon">
+                {{ room.name.charAt(0).toUpperCase() }}
+              </div>
+              <div class="room-details">
+                <div class="room-name">{{ room.name }}</div>
+                <!-- <div class="room-last-message">{{ room.lastMessage || 'No messages yet' }}</div> -->
+              </div>
+              <!-- <div *ngIf="room.unreadCount" class="unread-badge">
+                {{ room.unreadCount }}
+              </div> -->
+            </div>
+            
+            <div *ngIf="rooms.length === 0 && !loadingRooms" class="empty-rooms">
+              <p>No rooms yet</p>
+              <p class="hint">Create your first room!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-area">
+          <!-- Chat Header -->
+          <div class="chat-header" *ngIf="selectedRoom">
+            <div class="room-info">
+              <div class="room-icon large">
+                {{ selectedRoom.name.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <h3>{{ selectedRoom.name }}</h3>
+                <span class="room-meta">{{ messages.length }} messages</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-header" *ngIf="!selectedRoom">
+            <h3>Select a room to start chatting</h3>
+          </div>
+
+          <!-- Messages Area -->
+          <div class="messages-area" #messagesArea>
+            <div *ngIf="loadingMessages" class="loading">
+              Loading messages...
+            </div>
+            
+            <div *ngIf="!selectedRoom" class="no-room-selected">
+              <div class="empty-state">
+                <div class="empty-icon">💬</div>
+                <h3>No room selected</h3>
+                <p>Choose a room from the sidebar or create a new one</p>
+              </div>
+            </div>
+            
+            <div *ngIf="selectedRoom && messages.length === 0 && !loadingMessages" class="no-messages">
+              <div class="empty-state">
+                <div class="empty-icon">👋</div>
+                <h3>No messages yet</h3>
+                <p>Be the first to send a message!</p>
+              </div>
+            </div>
+            
+            <div *ngFor="let message of messages" class="message-wrapper">
+              <div 
+                class="message" 
+                [class.own-message]="message.senderUsername === currentUsername"
+              >
+                <div class="message-header">
+                  <span class="message-sender">{{ message.senderUsername }}</span>
+                  <span class="message-time">{{ message.createdAt | date:'short' }}</span>
+                </div>
+                <div class="message-content">{{ message.content }}</div>
+              </div>
+            </div>
+            
+            <div #scrollAnchor></div>
+          </div>
+
+          <!-- Message Input -->
+          <div class="message-input-area" *ngIf="selectedRoom">
+            <textarea
+              [(ngModel)]="newMessage"
+              (keydown)="onEnterKey($event)"
+              placeholder="Type your message... (Press Enter to send)"
+              rows="1"
+            ></textarea>
+            <button 
+              class="send-btn" 
+              [disabled]="!newMessage.trim()"
+              (click)="onSendClick()"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Room Modal -->
+   <div class="modal" *ngIf="showCreateRoomModal" (click)="showCreateRoomModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>Create New Room</h3>
+            <button class="close-btn" (click)="showCreateRoomModal = false">×</button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="text"
+              [(ngModel)]="newRoomName"
+              placeholder="Enter room name"
+              (keydown.enter)="createRoom()"
+              autofocus
+            >
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" (click)="showCreateRoomModal = false">Cancel</button>
+            <button 
+              class="create-btn" 
+              [disabled]="!newRoomName.trim()"
+              (click)="createRoom()"
+            >
+              Create Room
+            </button>
+          </div>
+        </div>
+     
+    
+    </div> 
+    </div>

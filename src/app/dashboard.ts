@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../app/auth-service';
 import { ChatService } from '../app/chat-service';
 import { fetchAuthSession } from 'aws-amplify/auth';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,6 +11,11 @@ import { fetchAuthSession } from 'aws-amplify/auth';
   template: `
     <div style="padding: 20px; font-family: monospace;">
       <h2>🔐 AWS Amplify Test Dashboard</h2>
+
+      <span>
+<button (click)="gotoChat()">Goto Chat</button>
+
+      </span>
       
       <!-- Proof 1: Cognito Auth -->
       <div style="border: 2px solid #646cff; padding: 15px; margin: 10px 0; border-radius: 8px;">
@@ -39,6 +45,20 @@ Auth Status: <span [style.color]="currentUser ? 'green' : 'red'">{{ currentUser 
       <!-- Proof 3: AppSync Resolvers -->
       <div style="border: 2px solid #ff6b6b; padding: 15px; margin: 10px 0; border-radius: 8px;">
         <h3>⚡ 3. AppSync Resolvers</h3>
+        
+        <!-- NEW: Test List Rooms -->
+        <div style="margin-bottom: 30px; background: #f0f0f0; padding: 15px; border-radius: 8px;">
+          <h4 style="margin-top: 0;">📋 Test List Rooms:</h4>
+          <button (click)="testListRooms()" style="padding: 8px 16px; background: #9c27b0; color: white; border: none; border-radius: 4px;">
+            Get All Rooms
+          </button>
+          <button (click)="testGetRoom(roomIdInput.value)" style="padding: 8px 16px; margin-left: 10px; background: #ff9800; color: white; border: none; border-radius: 4px;">
+            Get Single Room
+          </button>
+          <div style="margin-top: 10px;">
+            <input #roomIdInput placeholder="Enter Room ID for single room query" style="width: 300px; padding: 8px; margin-right: 10px;">
+          </div>
+        </div>
         
         <!-- Test Room Creation -->
         <div style="margin-bottom: 20px;">
@@ -89,16 +109,24 @@ export class Dashboard implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private router: Router
   ) {}
 
   async ngOnInit() {
     await this.testAuth();
+
+  
+  }
+
+  gotoChat(){
+
+    this.router.navigate(['/chat']);
   }
 
   async testAuth() {
     try {
-        debugger;
+       
       this.currentUser = await this.authService.currentUser();
       if (this.currentUser) {
         // Get JWT token (Amplify v6 method)
@@ -146,6 +174,53 @@ export class Dashboard implements OnInit {
       this.graphQLResult = { error: error.message };
     }
   }
+
+  async testListRooms() {
+    this.graphQLResult = { loading: true };
+    try {
+      
+        // First try listRooms
+        const result = await this.chatService.testGraphQLQuery(`
+          query ListRooms {
+            listRooms {
+              roomId
+              name
+              createdAt
+            }
+          }
+        `);
+        this.graphQLResult = result;
+      
+    } catch (error: any) {
+      this.graphQLResult = { error: error.message };
+    }
+  }
+
+  async testGetRoom(roomId: string) {
+    if (!roomId) {
+      this.graphQLResult = { error: 'Please enter a Room ID' };
+      return;
+    }
+    
+    this.graphQLResult = { loading: true };
+    try {
+      const result = await this.chatService.testGraphQLQuery(`
+        query GetRoom($roomId: ID!) {
+          getRoom(roomId: $roomId) {
+            roomId
+            name
+            createdAt
+          }
+        }
+      `, { roomId });
+      this.graphQLResult = result;
+    } catch (error: any) {
+      this.graphQLResult = { error: error.message };
+    }
+  }
+
+
+  
 
   async signOut() {
     await this.authService.signOut();

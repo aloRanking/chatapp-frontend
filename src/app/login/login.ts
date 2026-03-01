@@ -34,11 +34,12 @@ export class Login {
         this.session = (result as any).session;
       } else {
         // Normal login, go to dashboard
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/chat']);
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       if((error as any).message === 'There is already a signed in user.') {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/chat']);
       }else
       this.error = error.message || 'Login failed';
     }
