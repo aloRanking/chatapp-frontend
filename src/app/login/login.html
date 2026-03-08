@@ -1,50 +1,140 @@
- <div *ngIf="!showNewPassword" style="max-width: 300px; margin: 50px auto; padding: 20px;">
-      <h2>Login</h2>
-      
-      <div *ngIf="error" style="color: red; margin-bottom: 10px;">
-        {{ error }}
+<div class="login-container">
+      <!-- Login Card -->
+      <div class="login-card" *ngIf="!showNewPassword">
+        <!-- Header -->
+        <div class="login-header">
+          <div class="logo">💬</div>
+          <h2>Welcome Back</h2>
+          <p class="subtitle">Sign in to continue to Chat</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="error" class="error-alert">
+          <span class="error-icon">⚠️</span>
+          <span>{{ error }}</span>
+          <button class="close-error" (click)="error = ''">×</button>
+        </div>
+
+        <!-- Success Alert for redirects -->
+        <div *ngIf="successMessage" class="success-alert">
+          <span class="success-icon">✓</span>
+          <span>{{ successMessage }}</span>
+        </div>
+
+        <!-- Login Form -->
+        <form (ngSubmit)="login()" #loginForm="ngForm">
+          <!-- Username Field -->
+          <div class="form-group">
+            <label for="username">
+              <span class="label-icon">👤</span>
+              Username
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="username"
+                name="username"
+                [(ngModel)]="username"
+                #usernameInput="ngModel"
+                required
+                minlength="3"
+                placeholder="Enter your username"
+                [class.invalid]="usernameInput.invalid && usernameInput.touched"
+                autocomplete="username"
+              >
+              <span *ngIf="usernameInput.valid && usernameInput.touched" class="input-valid">✓</span>
+            </div>
+            <div *ngIf="usernameInput.invalid && usernameInput.touched" class="error-message">
+              <small *ngIf="usernameInput.errors?.['required']">Username is required</small>
+              <small *ngIf="usernameInput.errors?.['minlength']">Username must be at least 3 characters</small>
+            </div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="password">
+              <span class="label-icon">🔒</span>
+              Password
+            </label>
+            <div class="input-wrapper password-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
+                name="password"
+                [(ngModel)]="password"
+                #passwordInput="ngModel"
+                required
+                minlength="8"
+                placeholder="Enter your password"
+                [class.invalid]="passwordInput.invalid && passwordInput.touched"
+                autocomplete="current-password"
+              >
+              <button 
+                type="button"
+                class="toggle-password"
+                (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              >
+                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div *ngIf="passwordInput.invalid && passwordInput.touched" class="error-message">
+              <small *ngIf="passwordInput.errors?.['required']">Password is required</small>
+              <small *ngIf="passwordInput.errors?.['minlength']">Password must be at least 8 characters</small>
+            </div>
+          </div>
+
+          <!-- Remember Me & Forgot Password -->
+          <div class="form-options">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe">
+              <span>Remember me</span>
+            </label>
+            <a routerLink="/forgot-password" class="forgot-link">Forgot password?</a>
+          </div>
+
+          <!-- Submit Button -->
+          <button 
+            type="submit" 
+            class="login-btn"
+            [disabled]="loginForm.invalid || isLoading"
+          >
+            <span *ngIf="!isLoading">Sign In</span>
+            <span *ngIf="isLoading" class="loading-spinner"></span>
+          </button>
+
+          <!-- Register Link -->
+          <div class="register-link">
+            Don't have an account? 
+            <a routerLink="/register" class="register-link-text">Create account</a>
+          </div>
+        </form>
+
+        <!-- Demo Credentials (Optional) -->
+        <div class="demo-credentials" *ngIf="showDemoCredentials">
+          <p>Demo credentials:</p>
+          <div class="credential-badge" (click)="fillDemoCredentials()">
+            <span>👤 demo_user</span>
+            <span>🔑 ••••••••</span>
+          </div>
+        </div>
       </div>
-      
-      <div style="margin: 10px 0;">
-        <input 
-          [(ngModel)]="username" 
-          placeholder="Username" 
-          style="width: 100%; padding: 8px;">
+
+      <!-- New Password Required Card -->
+      <div class="login-card" *ngIf="showNewPassword">
+        <app-new-password
+          [username]="username"
+          [session]="session"
+          (passwordChanged)="onPasswordChanged($event)"
+          (cancelled)="onPasswordCancelled()">
+        </app-new-password>
+        
+        <!-- Cancel Button -->
+        <button 
+          class="cancel-new-password-btn"
+          (click)="onPasswordCancelled()"
+        >
+          ← Back to Login
+        </button>
       </div>
-      
-      <div style="margin: 10px 0;">
-        <input 
-          [(ngModel)]="password" 
-          type="password" 
-          placeholder="Password" 
-          style="width: 100%; padding: 8px;">
-      </div>
-      
-      <button 
-        (click)="login()" 
-        [disabled]="!username || !password"
-        style="width: 100%; padding: 10px; margin-top: 10px;">
-        Login
-      </button>
-      
-      <p style="margin-top: 10px;">
-        Don't have an account? <a routerLink="/register">Register</a>
-      </p>
     </div>
-
-    <app-new-password
-      *ngIf="showNewPassword"
-      [username]="username"
-      [session]="session"
-      (passwordChanged)="onPasswordChanged($event)"
-      (cancelled)="onPasswordCancelled()">
-    </app-new-password>
-
-   <div class="div" style="max-width: 300px; margin: 20px auto;">
-
-    @if(showNewPassword){
-     <button 
-        (click)="showNewPassword = false;" 
-        style="width: 100%; padding: 10px; background: #fafcfa; color: black; border: none; border-radius: 4px; cursor: pointer;">
-        Cancel New Password Setup
-      </button>}

@@ -1,15 +1,34 @@
 import { Injectable } from '@angular/core';
-import { signIn, signUp, signOut, getCurrentUser, confirmSignIn } from 'aws-amplify/auth';
+import { signIn, signUp, signOut, getCurrentUser, confirmSignIn, resendSignUpCode, confirmSignUp } from 'aws-amplify/auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  signUp(username: string, password: string) {
-    return signUp({
+  async signUp(username: string, email: string, password: string) {
+  
+
+    try {
+    const result = await signUp({
       username,
-      password
+      password,
+      options: {
+        userAttributes: {
+          email: email
+        }
+      }
     });
+    return result;
+  } catch (error: any) {
+    // Re-throw with user-friendly message
+    if (error.name === 'UsernameExistsException') {
+      throw new Error('username exists');
+    }
+    if (error.name === 'InvalidPasswordException') {
+      throw new Error('password');
+    }
+    throw error;
   }
+}
 
   async signIn(username: string, password: string) {
     try {
@@ -44,6 +63,31 @@ export class AuthService {
       throw error;
     }
   }
+
+  async confirmSignUp(username: string, confirmationCode: string) {
+  try {
+    const result = await confirmSignUp({
+      username,
+      confirmationCode
+    });
+    return result;
+  } catch (error) {
+    console.error('Confirmation failed:', error);
+    throw error;
+  }
+}
+
+async resendConfirmationCode(username: string) {
+  try {
+    const result = await resendSignUpCode({
+      username
+    });
+    return result;
+  } catch (error) {
+    console.error('Resend code failed:', error);
+    throw error;
+  }
+}
 
 
   signOut() {

@@ -73,9 +73,11 @@ export class ChatService {
       query: `
         mutation SendMessage($roomId: ID!, $content: String!) {
           sendMessage(roomId: $roomId, content: $content) {
-            content
-            senderUsername
-            createdAt
+          messageId
+          roomId
+          senderUsername
+          content
+          createdAt
           }
         }
       `,

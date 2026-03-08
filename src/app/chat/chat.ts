@@ -78,21 +78,38 @@ export class Chat implements OnInit {
 
 
   async selectRoom(room: Room) {
+    if (this.subscription) {
+    this.subscription.unsubscribe();
+    this.subscription = null;}
+    
     if(this.selectedRoom === room) return;
     this.selectedRoom = room;
     await this.loadMessages(room.roomId);
 
 this.subscription = this.chatService
-    .subscribeToMessages(room.roomId)
-    .subscribe({
-      
-      next: ({ data }) => {
-        console.log('Subscription next value:', data);
-        const newMessage = data.onMessageSent;
-        this.messages.push(newMessage);
-      },
-      error: err => console.error('Subscription error', err)
-    });
+  .subscribeToMessages(room.roomId)
+  .subscribe({
+    next: (event: any) => {
+      console.log('Raw subscription event:', event);
+
+      let newMessage;
+
+      if (event?.value?.data?.onMessageSent) {
+        newMessage = event.value.data.onMessageSent;
+      } else if (event?.data?.onMessageSent) {
+        newMessage = event.data.onMessageSent;
+      }
+
+      if (!newMessage) return;
+
+     
+      if (newMessage.senderUsername === this.currentUsername) return;
+
+      this.messages = [...this.messages, newMessage];
+      setTimeout(() => this.scrollToBottom(), 50);
+    },
+    error: err => console.error('Subscription error', err)
+  });
 
   //  this.chatService
   // .subscribeToMessages(room.roomId)
@@ -174,6 +191,8 @@ onSendClick() {
           this.selectedRoom.roomId, 
           messageContent
         );
+
+        console.log('Mutation result:', result);
         
         
         // this.messages = this.messages.map(m => 
@@ -203,10 +222,11 @@ onSendClick() {
   }
 
 
-  onDestroy() {
-    if (this.subscription) {
+  ngOnDestroy() {
+  if (this.subscription) {
     this.subscription.unsubscribe();
   }
+
 
 }
 

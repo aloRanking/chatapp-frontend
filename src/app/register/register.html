@@ -1,1 +1,166 @@
-<p>register works!</p>
+<div class="register-container">
+      <div class="register-card">
+        <div class="register-header">
+          <h2>Create Account</h2>
+          <p class="subtitle">Join the chat room</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="errorMessage" class="error-alert">
+          <span class="error-icon">⚠️</span>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Success Alert -->
+        <div *ngIf="successMessage" class="success-alert">
+          <span class="success-icon">✓</span>
+          {{ successMessage }}
+        </div>
+
+        <!-- Registration Form -->
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+          <!-- Username Field -->
+          <div class="form-group">
+            <label for="username">
+              <span class="label-icon">👤</span>
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              [(ngModel)]="username"
+              #usernameInput="ngModel"
+              required
+              minlength="3"
+              maxlength="20"
+              pattern="^[a-zA-Z0-9_]+$"
+              placeholder="Choose a username"
+              [class.invalid]="usernameInput.invalid && usernameInput.touched"
+            >
+            <div *ngIf="usernameInput.invalid && usernameInput.touched" class="validation-errors">
+              <small *ngIf="usernameInput.errors?.['required']">Username is required</small>
+              <small *ngIf="usernameInput.errors?.['minlength']">Username must be at least 3 characters</small>
+              <small *ngIf="usernameInput.errors?.['pattern']">Only letters, numbers, and underscores allowed</small>
+            </div>
+          </div>
+
+          <!-- Email (NEW) -->
+          <div class="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              required
+              email
+              #emailInput="ngModel"
+              placeholder="we'll send verification code here"
+            >
+            <div *ngIf="emailInput.invalid && emailInput.touched" class="error-message">
+              <small *ngIf="emailInput.errors?.['required']">Email is required</small>
+              <small *ngIf="emailInput.errors?.['email']">Enter a valid email</small>
+            </div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="password">
+              <span class="label-icon">🔒</span>
+              Password
+            </label>
+            <div class="password-input-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
+                name="password"
+                [(ngModel)]="password"
+                #passwordInput="ngModel"
+                required
+                minlength="8"
+                [pattern]="passwordPattern"
+                placeholder="Create a strong password"
+                [class.invalid]="passwordInput.invalid && passwordInput.touched"
+              >
+              <button 
+                type="button" 
+                class="toggle-password"
+                (click)="showPassword = !showPassword"
+              >
+                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div *ngIf="passwordInput.invalid && passwordInput.touched" class="validation-errors">
+              <small *ngIf="passwordInput.errors?.['required']">Password is required</small>
+              <small *ngIf="passwordInput.errors?.['minlength']">Password must be at least 8 characters</small>
+              <small *ngIf="passwordInput.errors?.['pattern']">
+                Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character
+              </small>
+            </div>
+          </div>
+
+          <!-- Confirm Password Field -->
+          <div class="form-group">
+            <label for="confirmPassword">
+              <span class="label-icon">✓</span>
+              Confirm Password
+            </label>
+            <input
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              id="confirmPassword"
+              name="confirmPassword"
+              [(ngModel)]="confirmPassword"
+              #confirmInput="ngModel"
+              required
+              placeholder="Re-enter your password"
+              [class.invalid]="(confirmInput.invalid || passwordsDoNotMatch) && confirmInput.touched"
+            >
+            <div *ngIf="confirmInput.touched" class="validation-errors">
+              <small *ngIf="confirmInput.errors?.['required']">Please confirm your password</small>
+              <small *ngIf="passwordsDoNotMatch">Passwords do not match</small>
+            </div>
+          </div>
+
+          <!-- Password Strength Meter -->
+          <div *ngIf="password" class="password-strength">
+            <div class="strength-label">Password strength:</div>
+            <div class="strength-bars">
+              <div class="strength-bar" [class.active]="passwordStrength >= 1" [style.background]="getStrengthColor(1)"></div>
+              <div class="strength-bar" [class.active]="passwordStrength >= 2" [style.background]="getStrengthColor(2)"></div>
+              <div class="strength-bar" [class.active]="passwordStrength >= 3" [style.background]="getStrengthColor(3)"></div>
+              <div class="strength-bar" [class.active]="passwordStrength >= 4" [style.background]="getStrengthColor(4)"></div>
+            </div>
+            <span class="strength-text">{{ getStrengthText() }}</span>
+          </div>
+
+          <!-- Terms Checkbox -->
+          <div class="terms-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                name="acceptTerms"
+                [(ngModel)]="acceptTerms"
+                required
+              >
+              <span>I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a></span>
+            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <button 
+            type="submit" 
+            class="register-btn"
+            [disabled]="registerForm.invalid || !acceptTerms || isLoading"
+          >
+            <span *ngIf="!isLoading">Create Account</span>
+            <span *ngIf="isLoading" class="loading-spinner"></span>
+          </button>
+
+          <!-- Login Link -->
+          <div class="login-link">
+            Already have an account? 
+            <a routerLink="/login" class="login-link-text">Sign in</a>
+          </div>
+        </form>
+      </div>
+    </div>
